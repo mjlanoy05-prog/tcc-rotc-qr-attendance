@@ -1,11 +1,12 @@
 body{
 
 font-family:Arial;
+
 text-align:center;
-background:#f2f2f2;
+
+background:#eeeeee;
 
 }
-
 
 
 h1{
@@ -19,35 +20,8 @@ color:green;
 #reader{
 
 width:350px;
+
 margin:auto;
-
-}
-
-
-
-button{
-
-margin-top:20px;
-
-padding:15px 25px;
-
-background:green;
-
-color:white;
-
-border:none;
-
-border-radius:10px;
-
-font-size:16px;
-
-}
-
-
-
-button:hover{
-
-background:darkgreen;
 
 }
 
@@ -57,9 +31,9 @@ background:darkgreen;
 
 background:white;
 
-margin:20px;
-
 padding:20px;
+
+margin:20px;
 
 border-radius:10px;
 
