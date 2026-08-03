@@ -1,62 +1,132 @@
-
 const API_URL =
 "https://script.google.com/macros/s/AKfycbw70zMh8Sur4dw66nd8Wjzn20tYrxO_f6y-c7CYhTYA7NeAJ8uD-XSS0Plb2qDT5mgj/exec";
 
 
-let currentQR="";
 
 
 
-// =====================
-// SCAN QR
-// =====================
+let scannedQR = "";
 
 
-function scanSuccess(text){
 
 
-currentQR=text;
+
+// START CAMERA
+
+function startCamera(){
 
 
-fetch(API_URL,{
 
-method:"POST",
+Html5Qrcode.getCameras()
 
-body:JSON.stringify({
-
-qr_id:text
-
-})
-
-})
+.then(cameras=>{
 
 
-.then(res=>res.json())
+if(cameras.length === 0){
+
+alert(
+"No camera detected"
+);
+
+return;
+
+}
 
 
-.then(data=>{
+
+// choose rear camera
+
+let cameraId =
+cameras[cameras.length-1].id;
+
+
+
+let qrScanner =
+new Html5Qrcode(
+"reader"
+);
+
+
+
+
+
+qrScanner.start(
+
+
+cameraId,
+
+
+{
+
+
+fps:20,
+
+
+qrbox:{
+width:300,
+height:300
+},
+
+
+aspectRatio:1.0
+
+
+},
+
+
+
+(qrCode)=>{
+
+
+console.log(
+"QR:",
+qrCode
+);
+
+
+
+scannedQR = qrCode;
+
 
 
 document
 .getElementById("status")
-.innerHTML=data.message;
+.innerHTML =
+"QR Detected: "
++
+qrCode;
 
 
 
-document
-.getElementById("result")
-.innerHTML=
+sendAttendance(qrCode);
 
 
-`
-<h2>${data.name || ""}</h2>
 
-<p>
-${data.course || ""}
-${data.section || ""}
-</p>
+},
 
-`
+
+
+(error)=>{
+
+}
+
+
+
+);
+
+
+
+})
+
+.catch(err=>{
+
+
+alert(
+"Camera error: "
++
+err
+);
+
 
 });
 
@@ -65,69 +135,35 @@ ${data.section || ""}
 
 
 
-// START CAMERA
-
-
-let scanner =
-new Html5QrcodeScanner(
-
-"reader",
-
-{
-
-fps:10,
-
-qrbox:250
-
-}
-
-);
 
 
 
-scanner.render(scanSuccess);
+// SEND QR TO APPS SCRIPT
 
 
-
-
-
-
-// =====================
-// CHECK ATTENDANCE
-// =====================
-
-
-function checkAttendance(){
-
-
-if(currentQR==""){
-
-
-alert(
-"Please scan your QR first"
-);
-
-
-return;
-
-
-}
+function sendAttendance(qr){
 
 
 
 fetch(
-
-API_URL+
-"?action=check&qr_id="
-+
-currentQR
-
-)
+API_URL,
+{
 
 
+method:"POST",
 
-.then(res=>res.json())
 
+body:JSON.stringify({
+
+qr_id:qr
+
+})
+
+
+})
+
+
+.then(response=>response.json())
 
 
 .then(data=>{
@@ -141,41 +177,18 @@ document
 `
 
 <h2>
-${data.name}
+${data.message}
 </h2>
 
 
-<p>
-${data.course}
--
-${data.section}
-</p>
-
-
-<hr>
+<h3>
+${data.name || ""}
+</h3>
 
 
 <p>
-Day 1:
-${data.day1}
-</p>
-
-
-<p>
-Day 2:
-${data.day2}
-</p>
-
-
-<p>
-Day 3:
-${data.day3}
-</p>
-
-
-<p>
-Day 4:
-${data.day4}
+${data.course || ""}
+${data.section || ""}
 </p>
 
 
@@ -183,7 +196,26 @@ ${data.day4}
 
 
 
+})
+
+
+
+.catch(error=>{
+
+
+document
+.getElementById("result")
+.innerHTML=
+error;
+
+
 });
 
 
 }
+
+
+
+
+
+startCamera();
