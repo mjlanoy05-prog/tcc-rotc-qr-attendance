@@ -1,5 +1,5 @@
 const API_URL =
-"YOUR_APPS_SCRIPT_URL";
+"https://script.google.com/macros/s/AKfycbxTb5Rmgxx1-LX2gdlkw4xbIq9ZMQKaKqD1SR7sNW0RbOLM7e8s01uQ5G6ro3KE/exec";
 
 
 
