@@ -1,9 +1,21 @@
+
 const API_URL =
-"https://script.google.com/macros/s/AKfycbxTb5Rmgxx1-LX2gdlkw4xbIq9ZMQKaKqD1SR7sNW0RbOLM7e8s01uQ5G6ro3KE/exec";
+"https://script.google.com/macros/s/AKfycbwwOtuCyjjCO9dAch4sAjUhrVCy0iV2GDTVMgwS7annr9uKrRPzF2MGAN94tCSnPgDL/exec";
+
+
+let currentQR="";
 
 
 
-function sendQR(qr){
+// =====================
+// SCAN QR
+// =====================
+
+
+function scanSuccess(text){
+
+
+currentQR=text;
 
 
 fetch(API_URL,{
@@ -12,7 +24,7 @@ method:"POST",
 
 body:JSON.stringify({
 
-qr_id:qr
+qr_id:text
 
 })
 
@@ -21,27 +33,30 @@ qr_id:qr
 
 .then(res=>res.json())
 
+
 .then(data=>{
 
 
-document.getElementById("result")
-.innerHTML =
-
-data.message;
-
+document
+.getElementById("status")
+.innerHTML=data.message;
 
 
-if(data.name){
 
-document.getElementById("result")
-.innerHTML +=
+document
+.getElementById("result")
+.innerHTML=
 
-"<br>"+data.name+
-"<br>"+data.course+
-" "+data.section;
 
-}
+`
+<h2>${data.name || ""}</h2>
 
+<p>
+${data.course || ""}
+${data.section || ""}
+</p>
+
+`
 
 });
 
@@ -50,14 +65,7 @@ document.getElementById("result")
 
 
 
-function success(decodedText){
-
-
-sendQR(decodedText);
-
-
-}
-
+// START CAMERA
 
 
 let scanner =
@@ -76,4 +84,106 @@ qrbox:250
 );
 
 
-scanner.render(success);
+
+scanner.render(scanSuccess);
+
+
+
+
+
+
+// =====================
+// CHECK ATTENDANCE
+// =====================
+
+
+function checkAttendance(){
+
+
+if(currentQR==""){
+
+
+alert(
+"Please scan your QR first"
+);
+
+
+return;
+
+
+}
+
+
+
+fetch(
+
+API_URL+
+"?action=check&qr_id="
++
+currentQR
+
+)
+
+
+
+.then(res=>res.json())
+
+
+
+.then(data=>{
+
+
+document
+.getElementById("result")
+.innerHTML=
+
+
+`
+
+<h2>
+${data.name}
+</h2>
+
+
+<p>
+${data.course}
+-
+${data.section}
+</p>
+
+
+<hr>
+
+
+<p>
+Day 1:
+${data.day1}
+</p>
+
+
+<p>
+Day 2:
+${data.day2}
+</p>
+
+
+<p>
+Day 3:
+${data.day3}
+</p>
+
+
+<p>
+Day 4:
+${data.day4}
+</p>
+
+
+`;
+
+
+
+});
+
+
+}
