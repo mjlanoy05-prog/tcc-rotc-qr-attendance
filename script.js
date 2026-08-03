@@ -1,164 +1,56 @@
 const API_URL =
-"https://script.google.com/macros/s/AKfycbw70zMh8Sur4dw66nd8Wjzn20tYrxO_f6y-c7CYhTYA7NeAJ8uD-XSS0Plb2qDT5mgj/exec";
+"YOUR_SCRIPT_URL";
+
+
+
+let currentQR = "";
 
 
 
 
+// QR SCANNED
 
-let scannedQR = "";
-
-
-
+function qrSuccess(decodedText){
 
 
-// START CAMERA
-
-function startCamera(){
-
-
-
-Html5Qrcode.getCameras()
-
-.then(cameras=>{
-
-
-if(cameras.length === 0){
-
-alert(
-"No camera detected"
-);
-
-return;
-
-}
-
-
-
-// choose rear camera
-
-let cameraId =
-cameras[cameras.length-1].id;
-
-
-
-let qrScanner =
-new Html5Qrcode(
-"reader"
-);
-
-
-
-
-
-qrScanner.start(
-
-
-cameraId,
-
-
-{
-
-
-fps:20,
-
-
-qrbox:{
-width:300,
-height:300
-},
-
-
-aspectRatio:1.0
-
-
-},
-
-
-
-(qrCode)=>{
-
-
-console.log(
-"QR:",
-qrCode
-);
-
-
-
-scannedQR = qrCode;
+currentQR =
+decodedText.trim();
 
 
 
 document
 .getElementById("status")
 .innerHTML =
-"QR Detected: "
+"Detected: "
 +
-qrCode;
+currentQR;
 
 
 
-sendAttendance(qrCode);
+sendAttendance();
 
-
-
-},
-
-
-
-(error)=>{
-
-}
-
-
-
-);
-
-
-
-})
-
-.catch(err=>{
-
-
-alert(
-"Camera error: "
-+
-err
-);
-
-
-});
 
 
 }
-
-
 
 
 
 
 // SEND QR TO APPS SCRIPT
 
-
-function sendAttendance(qr){
-
+function sendAttendance(){
 
 
-fetch(
-API_URL,
-{
 
+fetch(API_URL,{
 
 method:"POST",
 
-
 body:JSON.stringify({
 
-qr_id:qr
+qr_id:currentQR
 
 })
-
 
 })
 
@@ -171,42 +63,22 @@ qr_id:qr
 
 document
 .getElementById("result")
-.innerHTML=
-
+.innerHTML =
 
 `
 
-<h2>
-${data.message}
-</h2>
+<h2>${data.message}</h2>
 
-
-<h3>
+<p>
 ${data.name || ""}
-</h3>
-
+</p>
 
 <p>
 ${data.course || ""}
-${data.section || ""}
 </p>
-
 
 `;
 
-
-
-})
-
-
-
-.catch(error=>{
-
-
-document
-.getElementById("result")
-.innerHTML=
-error;
 
 
 });
@@ -218,4 +90,100 @@ error;
 
 
 
-startCamera();
+// START CAMERA
+
+let scanner =
+new Html5QrcodeScanner(
+
+"reader",
+
+{
+
+fps:20,
+
+qrbox:300
+
+}
+
+);
+
+
+scanner.render(qrSuccess);
+
+
+
+
+
+
+
+// CHECK ATTENDANCE BUTTON
+
+function checkAttendance(){
+
+
+
+if(currentQR==""){
+
+
+alert(
+"Please scan QR first"
+);
+
+
+return;
+
+
+}
+
+
+
+fetch(
+
+API_URL+
+"?action=check&qr_id="
++
+currentQR
+
+)
+
+
+.then(response=>response.json())
+
+
+.then(data=>{
+
+
+document
+.getElementById("result")
+.innerHTML =
+
+
+`
+
+<h2>
+${data.name}
+</h2>
+
+
+<p>
+${data.course}
+</p>
+
+
+<hr>
+
+
+<p>
+DAY 1:
+${data.day1}
+</p>
+
+
+`;
+
+
+
+});
+
+
+}
